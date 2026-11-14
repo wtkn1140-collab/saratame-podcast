@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1c1a17">
+<title>サラタメさん</title>
+<style>
+:root{--bg:#f6f3ee;--card:#fff;--ink:#1c1a17;--sub:#6f6a62;--line:#e4dfd6;--accent:#b4532a;--bar:#1c1a17;--barink:#f6f3ee}
+@media (prefers-color-scheme:dark){:root{--bg:#141311;--card:#1f1d1a;--ink:#ece8e1;--sub:#9d978d;--line:#2e2b27;--accent:#e0875c;--bar:#26231f;--barink:#ece8e1}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,"Hiragino Sans",sans-serif;padding-bottom:230px}
+header{padding:28px 16px 12px;max-width:720px;margin:auto}
+h1{font-size:22px;margin:0}
+header p{margin:4px 0 0;color:var(--sub);font-size:13px}
+.tabs{display:flex;gap:8px;margin-top:14px}
+.tabs button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px;font-size:13px}
+.tabs button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+ul{list-style:none;margin:0 auto;padding:0 16px;max-width:720px}
+li{display:flex;gap:12px;padding:12px;background:var(--card);border:1px solid var(--line);border-radius:12px;margin-bottom:10px;cursor:pointer;align-items:center}
+li.now{border-color:var(--accent)}
+li.done{opacity:.5}
+li img{width:96px;height:54px;object-fit:cover;border-radius:6px;flex:none;background:var(--line)}
+li .t{font-size:14px;font-weight:600;line-height:1.35}
+li .m{font-size:12px;color:var(--sub);margin-top:4px}
+.prog{height:3px;background:var(--line);border-radius:2px;margin-top:6px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--accent)}
+.sub{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.sub a,.sub button{font-size:13px;border-radius:8px;padding:7px 12px;border:1px solid var(--accent);color:var(--accent);background:none;text-decoration:none}
+#bar{position:fixed;left:0;right:0;bottom:0;background:var(--bar);color:var(--barink);padding:14px 16px calc(14px + env(safe-area-inset-bottom));display:none}
+#bar .in{max-width:720px;margin:auto}
+#np{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#seek{width:100%;margin:10px 0 2px;accent-color:var(--accent)}
+.times{display:flex;justify-content:space-between;font-size:11px;opacity:.7;font-variant-numeric:tabular-nums}
+.ctl{display:flex;align-items:center;justify-content:center;gap:22px;margin-top:6px}
+.ctl button{background:none;border:0;color:inherit;font-size:15px;padding:6px}
+#pp{font-size:30px;width:56px;height:56px;border-radius:50%;background:var(--accent);color:#fff}
+#rate{border:1px solid currentColor;border-radius:999px;padding:3px 10px;font-size:13px}
+</style>
+</head>
+<body>
+<header>
+  <h1>サラタメさん</h1>
+  <p>再生位置は自動で保存されます</p>
+  <div class="sub"><button id="copy">フィードURLをコピー</button></div>
+  <div class="tabs"><button data-f="all" class="on">すべて</button><button data-f="unplayed">未再生</button></div>
+</header>
+<ul id="list"></ul>
+<div id="bar"><div class="in">
+  <div id="np"></div>
+  <input id="seek" type="range" min="0" max="1000" value="0">
+  <div class="times"><span id="cur">0:00</span><span id="dur">0:00</span></div>
+  <div class="ctl">
+    <button id="back">↺15</button>
+    <button id="pp">▶︎</button>
+    <button id="fwd">30↻</button>
+    <button id="rate">1.0×</button>
+  </div>
+</div></div>
+<audio id="a" preload="metadata"></audio>
+<script>
+const EPS = [{"id": "jeNROdU-ghQ", "title": "【圧倒的１選】AI時代、一番強い人の特徴【判明しました】", "upload_date": "20261110", "duration": 2775, "thumbnail": "https://i.ytimg.com/vi_webp/jeNROdU-ghQ/maxresdefault.webp", "url": "https://wtkn1140-collab.github.io/saratame-podcast-audio/ep-jeNROdU-ghQ.m4a"}, {"id": "cIT0SynJmVA", "title": "【マジ朗報】“失われた30年”をお過ごしの皆様へ【フィジカルAIが勝ち筋】", "upload_date": "20261014", "duration": 2597, "thumbnail": "https://i.ytimg.com/vi_webp/cIT0SynJmVA/maxresdefault.webp", "url": "https://wtkn1140-collab.github.io/saratame-podcast-audio/ep-cIT0SynJmVA.m4a"}, {"id": "o8mMELmh4Ak", "title": "【AIの正しい使い方】“今日から”も”10年後”も使えるヤツです。", "upload_date": "20260924", "duration": 3337, "thumbnail": "https://i.ytimg.com/vi_webp/o8mMELmh4Ak/maxresdefault.webp", "url": "https://wtkn1140-collab.github.io/saratame-podcast-audio/ep-o8mMELmh4Ak.m4a"}, {"id": "tbNQxI_qmyA", "title": "【天国か地獄か】AIとロボットのせいで\"2034年\"はこうなります。【衝撃の未来予測3選】", "upload_date": "20260901", "duration": 3995, "thumbnail": "https://i.ytimg.com/vi_webp/tbNQxI_qmyA/maxresdefault.webp", "url": "https://wtkn1140-collab.github.io/saratame-podcast-audio/ep-tbNQxI_qmyA.m4a"}, {"id": "cltFAL6veDc", "title": "【結論出た。完全に】誰でも”言語化”できちゃう「究極3ステップ」", "upload_date": "20260507", "duration": 3982, "thumbnail": "https://i.ytimg.com/vi_webp/cltFAL6veDc/maxresdefault.webp", "url": "https://wtkn1140-collab.github.io/saratame-podcast-audio/ep-cltFAL6veDc.m4a"}, {"id": "jcdIWhAiQI8", "title": "幸せ。結論。究極。この動画が最終回で良さそう。", "upload_date": "20260330", "duration": 5081, "thumbnail": "https://i.ytimg.com/vi_webp/jcdIWhAiQI8/maxresdefault.webp", "url": "https://wtkn1140-collab.github.io/saratame-podcast-audio/ep-jcdIWhAiQI8.m4a"}, {"id": "LThtaFiv2ZA", "title": "【究極の2つ】”2026年予測”系の動画、ぜーんぶ見たら結論出ました。", "upload_date": "20260128", "duration": 2517, "thumbnail": "https://i.ytimg.com/vi_webp/LThtaFiv2ZA/maxresdefault.webp", "url": "https://wtkn1140-collab.github.io/saratame-podcast-audio/ep-LThtaFiv2ZA.m4a"}, {"id": "9Sd4EcWZlgM", "title": "【斬新&納得の結論】\"お金の不安\"を根本の根本から消し飛ばす方法【究極の2つ】", "upload_date": "20260107", "duration": 2056, "thumbnail": "https://i.ytimg.com/vi_webp/9Sd4EcWZlgM/maxresdefault.webp", "url": "https://wtkn1140-collab.github.io/saratame-podcast-audio/ep-9Sd4EcWZlgM.m4a"}, {"id": "42ZxvZvsslM", "title": "【80万人超え\"書籍解説\"YouTuberが厳選】圧っっ倒的な信頼と絶大すぎる人気を誇る私が「今年のベスト4」語ります【2025年最新版】", "upload_date": "20251225", "duration": 3333, "thumbnail": "https://i.ytimg.com/vi_webp/42ZxvZvsslM/maxresdefault.webp", "url": "https://wtkn1140-collab.github.io/saratame-podcast-audio/ep-42ZxvZvsslM.m4a"}, {"id": "J1s6l1LYDd4", "title": "「AI時代に勝つのは“逸脱した人”だけ」by箕輪厚介(幻夏舎)", "upload_date": "20251224", "duration": 1399, "thumbnail": "https://i.ytimg.com/vi_webp/J1s6l1LYDd4/maxresdefault.webp", "url": "https://wtkn1140-collab.github.io/saratame-podcast-audio/ep-J1s6l1LYDd4.m4a"}, {"id": "YNT-KnjbVkU", "title": "【AI時代の結論】この“4つ”さえやればOK。絶対食いっぱぐれない。", "upload_date": "20251209", "duration": 2919, "thumbnail": "https://i.ytimg.com/vi_webp/YNT-KnjbVkU/maxresdefault.webp", "url": "https://wtkn1140-collab.github.io/saratame-podcast-audio/ep-YNT-KnjbVkU.m4a"}, {"id": "fuPf0O9-HAQ", "title": "【令和時代の勝ち方】年商83億社長ゆとりくん「努力に逃げるな。脱力しろ」", "upload_date": "20251104", "duration": 3351, "thumbnail": "https://i.ytimg.com/vi/fuPf0O9-HAQ/maxresdefault.jpg", "url": "https://wtkn1140-collab.github.io/saratame-podcast-audio/ep-fuPf0O9-HAQ.m4a"}, {"id": "ur2cLUjMCtw", "title": "【自宅に凸撃】バディカ中野社長 vs サラタメ【成長以外、全て死】", "upload_date": "20250918", "duration": 2777, "thumbnail": "https://i.ytimg.com/vi_webp/ur2cLUjMCtw/maxresdefault.webp", "url": "https://wtkn1140-collab.github.io/saratame-podcast-audio/ep-ur2cLUjMCtw.m4a"}, {"id": "sOat1c2MNWM", "title": "AI時代、絶対ダマされない“情報分析”の方法【究極の3STEP】", "upload_date": "20250729", "duration": 2268, "thumbnail": "https://i.ytimg.com/vi/sOat1c2MNWM/hqdefault.jpg", "url": "https://wtkn1140-collab.github.io/saratame-podcast-audio/ep-sOat1c2MNWM.m4a"}, {"id": "vd_rsaPLwfQ", "title": "【意地でもAI使わずに】『嫌われる勇気』をラップにしてみた", "upload_date": "20250611", "duration": 121, "thumbnail": "https://i.ytimg.com/vi/vd_rsaPLwfQ/hqdefault.jpg", "url": "https://wtkn1140-collab.github.io/saratame-podcast-audio/ep-vd_rsaPLwfQ.m4a"}];
+const FEED = 'https://wtkn1140-collab.github.io/saratame-podcast/feed.xml';
+document.getElementById('copy').onclick = async ev => {
+  try{ await navigator.clipboard.writeText(FEED); ev.target.textContent = 'コピーしました'; }
+  catch(e){ prompt('このURLをポッドキャストアプリに登録', FEED); }
+};
+const a = document.getElementById('a'), list = document.getElementById('list');
+const RATES = [1, 1.25, 1.5, 1.75, 2];
+let cur = null, filter = 'all';
+
+function load(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } }
+function save(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+let pos = load('pos', {}), done = load('done', {}), rate = load('rate', 1);
+
+function fmt(s){ s = Math.floor(s||0); const h = Math.floor(s/3600), m = Math.floor(s%3600/60), x = String(s%60).padStart(2,'0');
+  return h ? `${h}:${String(m).padStart(2,'0')}:${x}` : `${m}:${x}`; }
+function date(d){ return d ? `${d.slice(0,4)}/${d.slice(4,6)}/${d.slice(6)}` : ''; }
+
+function render(){
+  list.innerHTML = '';
+  EPS.filter(e => filter === 'all' || !done[e.id]).forEach(e => {
+    const li = document.createElement('li');
+    li.className = (cur && cur.id === e.id ? 'now ' : '') + (done[e.id] ? 'done' : '');
+    const p = done[e.id] ? 100 : Math.min(100, (pos[e.id]||0) / (e.duration||1) * 100);
+    const left = done[e.id] ? '再生済み' : pos[e.id] ? `残り ${fmt(e.duration - pos[e.id])}` : fmt(e.duration);
+    li.innerHTML = `<img loading="lazy" src="${e.thumbnail}" alt=""><div style="min-width:0;flex:1">
+      <div class="t"></div><div class="m">${date(e.upload_date)}・${left}</div>
+      <div class="prog"><i style="width:${p}%"></i></div></div>`;
+    li.querySelector('.t').textContent = e.title;
+    li.onclick = () => play(e);
+    list.appendChild(li);
+  });
+}
+
+function play(e){
+  if (cur && cur.id === e.id){ a.paused ? a.play() : a.pause(); return; }
+  cur = e;
+  a.src = e.url;
+  a.playbackRate = rate;
+  const start = done[e.id] ? 0 : (pos[e.id] || 0);
+  a.addEventListener('loadedmetadata', () => { a.currentTime = start; a.playbackRate = rate; }, {once:true});
+  a.play();
+  document.getElementById('bar').style.display = 'block';
+  document.getElementById('np').textContent = e.title;
+  if ('mediaSession' in navigator){
+    navigator.mediaSession.metadata = new MediaMetadata({title: e.title, artist: 'サラタメさん',
+      artwork: [{src: e.thumbnail, sizes: '480x360', type: 'image/jpeg'}]});
+  }
+  render();
+}
+
+let lastSave = 0;
+a.addEventListener('timeupdate', () => {
+  if (!cur) return;
+  document.getElementById('cur').textContent = fmt(a.currentTime);
+  document.getElementById('dur').textContent = fmt(a.duration);
+  document.getElementById('seek').value = a.duration ? a.currentTime / a.duration * 1000 : 0;
+  if (Date.now() - lastSave > 5000){ pos[cur.id] = a.currentTime; save('pos', pos); lastSave = Date.now(); }
+});
+a.addEventListener('pause', () => { if (cur){ pos[cur.id] = a.currentTime; save('pos', pos); render(); } });
+a.addEventListener('play', () => document.getElementById('pp').textContent = '❚❚');
+a.addEventListener('pause', () => document.getElementById('pp').textContent = '▶︎');
+a.addEventListener('ended', () => {
+  done[cur.id] = true; delete pos[cur.id]; save('done', done); save('pos', pos);
+  const next = EPS.slice(0, EPS.findIndex(e => e.id === cur.id)).reverse().find(e => !done[e.id]);
+  next ? play(next) : render();
+});
+
+const skip = s => a.currentTime = Math.max(0, Math.min(a.duration || 0, a.currentTime + s));
+document.getElementById('pp').onclick = () => a.paused ? a.play() : a.pause();
+document.getElementById('back').onclick = () => skip(-15);
+document.getElementById('fwd').onclick = () => skip(30);
+document.getElementById('seek').oninput = ev => { if (a.duration) a.currentTime = ev.target.value / 1000 * a.duration; };
+const rateBtn = document.getElementById('rate');
+rateBtn.textContent = rate.toFixed(2).replace(/0$/,'') + '×';
+rateBtn.onclick = () => { rate = RATES[(RATES.indexOf(rate) + 1) % RATES.length]; a.playbackRate = rate; save('rate', rate);
+  rateBtn.textContent = rate.toFixed(2).replace(/0$/,'') + '×'; };
+if ('mediaSession' in navigator){
+  navigator.mediaSession.setActionHandler('seekbackward', () => skip(-15));
+  navigator.mediaSession.setActionHandler('seekforward', () => skip(30));
+}
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  filter = b.dataset.f; render();
+});
+render();
+</script>
+</body>
+</html>
