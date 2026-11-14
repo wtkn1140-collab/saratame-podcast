@@ -1,0 +1,6 @@
+work/
+bin/
+logs/
+__pycache__/
+audio-site/
+archive*/
